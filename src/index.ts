@@ -425,7 +425,6 @@ class NatureAircon {
           throw new Error('not found device');
         }
         this.log.debug('newStatus', device);
-        this.log.info('newStatus', device.settings);
 
         this.device = device;
 
