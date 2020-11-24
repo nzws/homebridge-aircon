@@ -28,6 +28,7 @@ class NatureAircon {
   private warmTemp?: number;
   private coolTemp?: number;
   private isSwing = false;
+  private prevAction?: string;
 
   /**
    * REQUIRED - This is the entry point to your plugin
@@ -147,6 +148,14 @@ class NatureAircon {
     if (!this.device) {
       throw new Error('device is not initialized');
     }
+
+    return callback(null, this._getCurrentHeaterCoolerState());
+  }
+
+  private _getCurrentHeaterCoolerState() {
+    if (!this.device) {
+      throw new Error('device is not initialized');
+    }
     const {
       INACTIVE,
       HEATING,
@@ -155,16 +164,16 @@ class NatureAircon {
     const { mode } = this.device.settings;
 
     if (this._getActive() === 0) {
-      return callback(null, INACTIVE);
+      return INACTIVE;
     }
 
     switch (mode) {
       case 'cool':
-        return callback(null, COOLING);
+        return COOLING;
       case 'warm':
-        return callback(null, HEATING);
+        return HEATING;
       default:
-        return callback(null, INACTIVE);
+        return INACTIVE;
     }
   }
 
@@ -182,6 +191,7 @@ class NatureAircon {
       throw new Error('device is not initialized');
     }
     if (value === number) {
+      this.log.debug('handleTargetHeaterCoolerStateSet: skipped');
       return callback(null);
     }
     const { AUTO, HEAT, COOL } = this.Characteristic.TargetHeaterCoolerState;
@@ -394,6 +404,14 @@ class NatureAircon {
       throw new Error('device is not initialized');
     }
 
+    const newAction = JSON.stringify(newConfig);
+    this.log.debug(newAction);
+    if (this.prevAction && this.prevAction === newAction) {
+      this.log.info('same action, skipped');
+      return;
+    }
+    this.prevAction = newAction;
+
     const response = await this.natureClient.updateAirconSettings(
       this.device.id,
       newConfig,
@@ -455,6 +473,7 @@ class NatureAircon {
           this.Characteristic.TemperatureDisplayUnits,
           isC ? CELSIUS : FAHRENHEIT,
         );
+        this.service.updateCharacteristic(this.Characteristic.CurrentHeaterCoolerState, this._getCurrentHeaterCoolerState());
       });
   }
 }

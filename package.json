@@ -1,7 +1,7 @@
 {
   "displayName": "Aircon Control for Homebridge + Nature Remo",
   "name": "@nzws/homebridge-nature-aircon",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Aircon Control for Homebridge + Nature Remo",
   "license": "Apache-2.0",
   "repository": "https://github.com/nzws/homebridge-aircon.git",
