@@ -70,22 +70,25 @@ class NatureAircon {
       .getCharacteristic(this.Characteristic.CurrentTemperature)
       .on('get', this.handleCurrentTemperatureGet.bind(this));
 
-    this.service.getCharacteristic(this.Characteristic.CoolingThresholdTemperature)
+    this.service
+      .getCharacteristic(this.Characteristic.CoolingThresholdTemperature)
       .on('get', this.handleCoolingThresholdTemperatureGet.bind(this))
       .on('set', this.handleCoolingThresholdTemperatureSet.bind(this));
 
-    this.service.getCharacteristic(this.Characteristic.HeatingThresholdTemperature)
+    this.service
+      .getCharacteristic(this.Characteristic.HeatingThresholdTemperature)
       .on('get', this.handleHeatingThresholdTemperatureGet.bind(this))
       .on('set', this.handleHeatingThresholdTemperatureSet.bind(this));
 
-    this.service.getCharacteristic(this.Characteristic.RotationSpeed)
+    this.service
+      .getCharacteristic(this.Characteristic.RotationSpeed)
       .on('get', this.handleRotationSpeedGet.bind(this))
       .on('set', this.handleRotationSpeedSet.bind(this));
 
-    this.service.getCharacteristic(this.Characteristic.SwingMode)
+    this.service
+      .getCharacteristic(this.Characteristic.SwingMode)
       .on('get', this.handleSwingModeGet.bind(this))
       .on('set', this.handleSwingModeSet.bind(this));
-
 
     this.informationService = new this.Service.AccessoryInformation()
       .setCharacteristic(this.Characteristic.Manufacturer, 'homebridge.io')
@@ -121,10 +124,10 @@ class NatureAircon {
 
     if (value === ACTIVE) {
       const {
-        settings: { mode },
+        settings: { mode }
       } = this.device;
       await this._updateAircon({
-        operation_mode: mode,
+        operation_mode: mode
       });
     } else if (value === INACTIVE) {
       await this._updateAircon({ button: 'power-off' });
@@ -159,7 +162,7 @@ class NatureAircon {
     const {
       INACTIVE,
       HEATING,
-      COOLING,
+      COOLING
     } = this.Characteristic.CurrentHeaterCoolerState;
     const { mode } = this.device.settings;
 
@@ -200,13 +203,13 @@ class NatureAircon {
     } = {
       [AUTO]: 'auto',
       [HEAT]: 'warm',
-      [COOL]: 'cool',
+      [COOL]: 'cool'
     };
     const temp = mode[value] === 'warm' ? this.warmTemp : this.coolTemp;
 
     await this._updateAircon({
       operation_mode: mode[value],
-      ...(temp ? { temperature: temp.toString() } : {}),
+      ...(temp ? { temperature: temp.toString() } : {})
     });
 
     callback(null);
@@ -258,7 +261,7 @@ class NatureAircon {
     if (this.device.settings.mode === 'cool') {
       try {
         await this._updateAircon({
-          temperature: value,
+          temperature: value
         });
       } catch (e) {
         this.coolTemp = prev;
@@ -292,7 +295,7 @@ class NatureAircon {
     if (this.device.settings.mode === 'warm') {
       try {
         await this._updateAircon({
-          temperature: value,
+          temperature: value
         });
       } catch (e) {
         this.warmTemp = prev;
@@ -311,9 +314,7 @@ class NatureAircon {
     const { vol, mode } = this.device.settings;
     const { count } = this._getVols(mode);
     const isAuto = vol === 'auto';
-    const percentage = Math.ceil(
-      (100 / count) * parseInt(vol),
-    );
+    const percentage = Math.ceil((100 / count) * parseInt(vol));
 
     callback(undefined, isAuto ? 0 : percentage);
   }
@@ -327,21 +328,21 @@ class NatureAircon {
     const { count, hasAuto } = this._getVols(mode);
     const newCount = Math.min(
       count,
-      Math.max(Math.ceil(value / (100 / count)), 1),
+      Math.max(Math.ceil(value / (100 / count)), 1)
     );
     const air_volume = hasAuto && value === 0 ? '0' : newCount.toString();
     this.log.info('handleRotationSpeedSet', {
       value,
       newCount,
       vol,
-      air_volume,
+      air_volume
     });
     if (vol === air_volume) {
       return callback(null);
     }
 
     await this._updateAircon({
-      air_volume,
+      air_volume
     });
     callback(null);
   }
@@ -363,7 +364,7 @@ class NatureAircon {
     this.isSwing = !this.isSwing;
     try {
       await this._updateAircon({
-        button: 'airdir-swing',
+        button: 'airdir-swing'
       });
     } catch (e) {
       this.isSwing = !this.isSwing;
@@ -381,7 +382,9 @@ class NatureAircon {
     return [parseInt(temp[0]), parseInt(temp[temp.length - 1])];
   }
 
-  private _getVols(mode: NatureRemo.IAirconModeType): {
+  private _getVols(
+    mode: NatureRemo.IAirconModeType
+  ): {
     count: number;
     hasAuto: boolean;
   } {
@@ -393,12 +396,12 @@ class NatureAircon {
 
     return {
       count: hasAuto ? vol.length - 1 : vol.length,
-      hasAuto,
+      hasAuto
     };
   }
 
   private async _updateAircon(
-    newConfig: Partial<NatureRemo.IUpdateAirconSettingsOptions>,
+    newConfig: Partial<NatureRemo.IUpdateAirconSettingsOptions>
   ) {
     if (!this.natureClient || !this.device) {
       throw new Error('device is not initialized');
@@ -414,7 +417,7 @@ class NatureAircon {
 
     const response = await this.natureClient.updateAirconSettings(
       this.device.id,
-      newConfig,
+      newConfig
     );
     this.device.settings = response;
   }
@@ -425,20 +428,20 @@ class NatureAircon {
       return;
     }
 
-    this.natureClient.getSensorValue().then((sensor) => {
+    this.natureClient.getSensorValue().then(sensor => {
       this.sensor = sensor;
       this.service.updateCharacteristic(
         this.Characteristic.CurrentTemperature,
-        sensor.temperature,
+        sensor.temperature
       );
     });
 
     this.natureClient
       .listAircon()
-      .then((devices) =>
-        devices.find((i, key) => i.id === id || (!id && key === 0)),
+      .then(devices =>
+        devices.find((i, key) => i.id === id || (!id && key === 0))
       )
-      .then((device) => {
+      .then(device => {
         if (!device) {
           throw new Error('not found device');
         }
@@ -452,7 +455,7 @@ class NatureAircon {
           .setProps({
             minValue: cool[0],
             maxValue: cool[1],
-            minStep: 1,
+            minStep: 1
           });
         const warm = this._getTempThreshold('warm');
         this.service
@@ -460,20 +463,23 @@ class NatureAircon {
           .setProps({
             minValue: warm[0],
             maxValue: warm[1],
-            minStep: 1,
+            minStep: 1
           });
 
         // @ts-expect-error: temp_unit が型に無いっぽい
         const isC = device.settings.temp_unit === 'c';
         const {
           CELSIUS,
-          FAHRENHEIT,
+          FAHRENHEIT
         } = this.Characteristic.TemperatureDisplayUnits;
         this.service.updateCharacteristic(
           this.Characteristic.TemperatureDisplayUnits,
-          isC ? CELSIUS : FAHRENHEIT,
+          isC ? CELSIUS : FAHRENHEIT
         );
-        this.service.updateCharacteristic(this.Characteristic.CurrentHeaterCoolerState, this._getCurrentHeaterCoolerState());
+        this.service.updateCharacteristic(
+          this.Characteristic.CurrentHeaterCoolerState,
+          this._getCurrentHeaterCoolerState()
+        );
       });
   }
 }
