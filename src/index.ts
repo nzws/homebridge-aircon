@@ -105,7 +105,7 @@ class NatureAircon {
   }
 
   handleOnGet(callback) {
-    this.log.info('handleOnGet');
+    this.log.debug('handleOnGet');
     const number = this._getActive();
 
     callback(null, number);
@@ -147,7 +147,7 @@ class NatureAircon {
   }
 
   handleCurrentHeaterCoolerStateGet(callback) {
-    this.log.info('handleCurrentHeaterCoolerStateGet');
+    this.log.debug('handleCurrentHeaterCoolerStateGet');
     if (!this.device) {
       throw new Error('device is not initialized');
     }
@@ -181,7 +181,7 @@ class NatureAircon {
   }
 
   handleTargetHeaterCoolerStateGet(callback) {
-    this.log.info('handleTargetHeaterCoolerStateGet');
+    this.log.debug('handleTargetHeaterCoolerStateGet');
     const number = this._getTargetHCState();
 
     callback(null, number);
@@ -233,13 +233,13 @@ class NatureAircon {
   }
 
   handleCurrentTemperatureGet(callback) {
-    this.log.info('handleCurrentTemperatureGet');
+    this.log.debug('handleCurrentTemperatureGet');
 
     callback(null, this.sensor?.temperature || 0);
   }
 
   handleCoolingThresholdTemperatureGet(callback) {
-    this.log.info('handleCoolingThresholdTemperatureGet');
+    this.log.debug('handleCoolingThresholdTemperatureGet');
     if (!this.device) {
       throw new Error('device is not initialized');
     }
@@ -307,7 +307,7 @@ class NatureAircon {
   }
 
   handleRotationSpeedGet(callback) {
-    this.log.info('handleRotationSpeedGet');
+    this.log.debug('handleRotationSpeedGet');
     if (!this.device) {
       throw new Error('device is not initialized');
     }
